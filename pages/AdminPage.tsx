@@ -47,10 +47,16 @@ const AdminPage: React.FC = () => {
           .order('created_at', { ascending: false });
         setUsers(data || []);
       } else if (activeTab === 'api_keys') {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('api_keys')
           .select('*')
           .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading API keys:', error);
+        }
+
+        console.log('Loaded API keys:', data);
         setApiKeys(data || []);
       } else if (activeTab === 'subscriptions') {
         const { data } = await supabase
@@ -87,17 +93,25 @@ const AdminPage: React.FC = () => {
 
   const handleAddApiKey = async () => {
     try {
-      await supabase.from('api_keys').insert({
+      const { data, error } = await supabase.from('api_keys').insert({
         name: newApiKey.name,
         provider: newApiKey.provider,
         api_key: newApiKey.api_key,
         created_by: profile?.id,
       });
+
+      if (error) {
+        console.error('Error adding API key:', error);
+        alert(`Error adding API key: ${error.message}`);
+        return;
+      }
+
       setShowAddApiKey(false);
       setNewApiKey({ name: '', provider: '', api_key: '' });
       loadData();
     } catch (error) {
       console.error('Error adding API key:', error);
+      alert('Failed to add API key. Please try again.');
     }
   };
 
@@ -543,7 +557,12 @@ const AdminPage: React.FC = () => {
                       type="password"
                     />
                     <div className="flex space-x-2">
-                      <Button onClick={handleAddApiKey}>Save</Button>
+                      <Button
+                        onClick={handleAddApiKey}
+                        disabled={!newApiKey.name || !newApiKey.provider || !newApiKey.api_key}
+                      >
+                        Save
+                      </Button>
                       <Button variant="secondary" onClick={() => setShowAddApiKey(false)}>
                         Cancel
                       </Button>
@@ -552,54 +571,60 @@ const AdminPage: React.FC = () => {
                 </Card>
               )}
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Name</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Provider</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Created</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {apiKeys.map((key) => (
-                      <tr key={key.id} className="border-b border-gray-100 dark:border-gray-800">
-                        <td className="py-3 px-4 text-gray-900 dark:text-white">{key.name}</td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{key.provider}</td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              key.is_active
-                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                            }`}
-                          >
-                            {key.is_active ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
-                          {new Date(key.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="py-3 px-4">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => {
-                              if (window.confirm(`Are you sure you want to ${key.is_active ? 'deactivate' : 'activate'} the API key "${key.name}"?`)) {
-                                toggleApiKeyStatus(key.id, key.is_active);
-                              }
-                            }}
-                          >
-                            {key.is_active ? 'Deactivate' : 'Activate'}
-                          </Button>
-                        </td>
+{apiKeys.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 dark:text-gray-400">No API keys found. Click "Add API Key" to create one.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Name</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Provider</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Status</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Created</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {apiKeys.map((key) => (
+                        <tr key={key.id} className="border-b border-gray-100 dark:border-gray-800">
+                          <td className="py-3 px-4 text-gray-900 dark:text-white">{key.name}</td>
+                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{key.provider}</td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium ${
+                                key.is_active
+                                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                  : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                              }`}
+                            >
+                              {key.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                            {new Date(key.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="py-3 px-4">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to ${key.is_active ? 'deactivate' : 'activate'} the API key "${key.name}"?`)) {
+                                  toggleApiKeyStatus(key.id, key.is_active);
+                                }
+                              }}
+                            >
+                              {key.is_active ? 'Deactivate' : 'Activate'}
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </Card>
