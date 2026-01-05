@@ -4,6 +4,8 @@ import { ImagePart } from '../types';
 import { supabase } from '../lib/supabase';
 import { checkUsageLimit, logUsage } from './usageService';
 
+console.log('✅ GeminiService loaded - Version 2.0 (Canvas-based mock)');
+
 let cachedApiKey: string | null = null;
 let ai: GoogleGenAI | null = null;
 
@@ -70,42 +72,51 @@ export const fileToBase64 = (file: File): Promise<string> => {
 };
 
 const mockImageResponse = async (prompt: string): Promise<string> => {
+    console.log('🎨 Mock AI generating image (canvas-based, no external fetch)');
+    console.log(`📝 Prompt: ${prompt.slice(0, 50)}...`);
+
     await new Promise(res => setTimeout(res, 1500));
-    console.log(`Mock AI call for: ${prompt}`);
 
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 1024;
+        const ctx = canvas.getContext('2d');
 
-    if (!ctx) {
-        throw new Error('Failed to create canvas context');
+        if (!ctx) {
+            throw new Error('Failed to create canvas context');
+        }
+
+        const hue1 = Math.floor(Math.random() * 360);
+        const hue2 = (hue1 + 60) % 360;
+        const gradient = ctx.createLinearGradient(0, 0, 1024, 1024);
+        gradient.addColorStop(0, `hsl(${hue1}, 70%, 60%)`);
+        gradient.addColorStop(1, `hsl(${hue2}, 70%, 50%)`);
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 1024, 1024);
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.font = 'bold 32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const text = prompt.slice(0, 50);
+        const lines = text.match(/.{1,30}/g) || [text];
+        const lineHeight = 40;
+        const startY = 512 - ((lines.length - 1) * lineHeight) / 2;
+
+        lines.forEach((line, i) => {
+            ctx.fillText(line, 512, startY + i * lineHeight);
+        });
+
+        const base64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+        console.log('✅ Mock image generated successfully (base64 length:', base64.length, ')');
+        return base64;
+    } catch (error) {
+        console.error('❌ Error in mockImageResponse:', error);
+        throw error;
     }
-
-    const hue1 = Math.floor(Math.random() * 360);
-    const hue2 = (hue1 + 60) % 360;
-    const gradient = ctx.createLinearGradient(0, 0, 1024, 1024);
-    gradient.addColorStop(0, `hsl(${hue1}, 70%, 60%)`);
-    gradient.addColorStop(1, `hsl(${hue2}, 70%, 50%)`);
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1024, 1024);
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.font = 'bold 32px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    const text = prompt.slice(0, 50);
-    const lines = text.match(/.{1,30}/g) || [text];
-    const lineHeight = 40;
-    const startY = 512 - ((lines.length - 1) * lineHeight) / 2;
-
-    lines.forEach((line, i) => {
-        ctx.fillText(line, 512, startY + i * lineHeight);
-    });
-
-    return canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
 };
 
 export const generateScene = async (prompt: string, userId?: string): Promise<string | null> => {

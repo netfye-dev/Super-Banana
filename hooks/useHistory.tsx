@@ -49,6 +49,10 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const addProductPhotoShoot = async (imageData: string, prompt: string, asset: ImagePart) => {
+    console.log('📦 Adding product photoshoot to history...');
+    console.log(`  - Image data size: ${Math.round(imageData.length / 1024)}KB`);
+    console.log(`  - Prompt: ${prompt.slice(0, 50)}...`);
+
     const newItem: HistoryItem = {
       id: Date.now().toString(),
       title: `Photoshoot #${productPhotoShootHistory.length + 1}`,
@@ -58,9 +62,11 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       assets: [asset],
     };
     setProductPhotoShootHistory(prev => [...prev, newItem]);
+    console.log('✅ Added to local history');
 
     if (user) {
       try {
+        console.log(`💾 Saving to database for user: ${user.id}`);
         const { data, error } = await supabase.from('generated_images').insert({
           user_id: user.id,
           title: newItem.title,
@@ -71,15 +77,17 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         });
 
         if (error) {
-          console.error('Error saving product photo to database:', error);
+          console.error('❌ Database error:', error);
           alert('Failed to save product photo to history: ' + error.message);
         } else {
-          console.log('Product photo saved successfully:', data);
+          console.log('✅ Product photo saved to database successfully');
         }
       } catch (error) {
-        console.error('Error saving product photo to database:', error);
-        alert('Failed to save product photo to history');
+        console.error('❌ Exception saving product photo to database:', error);
+        alert('Failed to save product photo to history: ' + (error as Error).message);
       }
+    } else {
+      console.warn('⚠️ No user logged in, skipping database save');
     }
   };
 

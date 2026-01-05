@@ -83,25 +83,33 @@ const ProductPage: React.FC = () => {
         setGeneratedImage(null);
         setIsSaved(false);
         try {
+            console.log('📤 Converting uploaded image to base64...');
             const base64 = await geminiService.fileToBase64(imageFile.file);
             const mimeType = imageFile.file.type;
-            
+            console.log(`✅ Image converted (${mimeType}, ${Math.round(base64.length / 1024)}KB)`);
+
             setGenerationAsset({ base64Data: base64, mimeType });
-            
+
+            console.log('🚀 Starting product photoshoot generation...');
             const result = await geminiService.generateProductPhotoShoot(base64, mimeType, prompt, productPhotoShootExamples, user.id);
 
             if (result) {
-                const dataUrl = `data:${mimeType};base64,${result}`;
+                console.log(`✅ Generated image received (${Math.round(result.length / 1024)}KB base64)`);
+                const dataUrl = `data:image/jpeg;base64,${result}`;
                 setGeneratedImage(dataUrl);
 
-                // Auto-save to history
+                console.log('💾 Auto-saving to history...');
                 const assetData = { base64Data: base64, mimeType };
                 await addProductPhotoShoot(dataUrl, prompt, assetData);
+                console.log('✅ Saved to history successfully');
                 setIsSaved(true);
+            } else {
+                console.warn('⚠️ No result returned from generation');
+                alert('Image generation returned no result. Please try again.');
             }
         } catch (error) {
-            console.error(error);
-            alert((error as Error).message);
+            console.error('❌ Error in handleGenerate:', error);
+            alert((error as Error).message || 'An unexpected error occurred');
         } finally {
             setIsLoading(false);
         }
