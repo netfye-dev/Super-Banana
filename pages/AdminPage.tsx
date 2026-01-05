@@ -540,9 +540,16 @@ const AdminPage: React.FC = () => {
                 <Card className="mb-4 bg-gray-50 dark:bg-gray-800">
                   <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">Add New API Key</h4>
                   <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
-                      <strong>Important:</strong> For image generation, use <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/40 rounded">google_gemini</code> as the provider name.
+                    <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                      <strong>How to get a Google Gemini API Key:</strong>
                     </p>
+                    <ol className="text-sm text-blue-800 dark:text-blue-200 list-decimal list-inside space-y-1">
+                      <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">Google AI Studio</a></li>
+                      <li>Sign in with your Google account</li>
+                      <li>Click "Create API Key" or "Get API Key"</li>
+                      <li>Copy the API key (starts with "AIza...")</li>
+                      <li>Use <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/40 rounded">google_gemini</code> as the provider name below</li>
+                    </ol>
                   </div>
                   <div className="space-y-3">
                     <Input

@@ -37,8 +37,17 @@ const getAiClient = async (): Promise<GoogleGenAI> => {
     throw new Error('No Google Gemini API key configured. Please contact your administrator to add an API key in the Admin Dashboard.');
   }
 
-  ai = new GoogleGenAI({ apiKey });
-  return ai;
+  if (!apiKey.trim() || apiKey.length < 20) {
+    throw new Error('Invalid Google Gemini API key format. Please verify the API key in the Admin Dashboard.');
+  }
+
+  try {
+    ai = new GoogleGenAI({ apiKey: apiKey.trim() });
+    return ai;
+  } catch (error) {
+    console.error('Failed to initialize Google GenAI client:', error);
+    throw new Error('Failed to initialize AI client. Please verify your API key is valid.');
+  }
 };
 
 const checkAndLogUsage = async (userId: string, actionType: 'thumbnail' | 'product_shoot' | 'reimagine' | 'scene') => {
@@ -106,6 +115,9 @@ export const generateScene = async (prompt: string, userId?: string): Promise<st
         return null;
     } catch (error) {
         console.error("Error generating scene:", error);
+        if (error instanceof Error && (error.message.includes('UNAUTHENTICATED') || error.message.includes('CREDENTIALS'))) {
+            throw new Error('Invalid Google Gemini API key. Please verify your API key in the Admin Dashboard.');
+        }
         throw new Error("Failed to generate scene. The prompt may have been rejected. Please try a different description.");
     }
 };
@@ -160,8 +172,13 @@ Use the examples as a strict style guide. Then, apply that style to the user's s
         return null;
     } catch (error) {
         console.error("Error generating product photoshoot:", error);
-        if (error instanceof Error && error.message.includes('API key')) {
-            throw error;
+        if (error instanceof Error) {
+            if (error.message.includes('API key') || error.message.includes('UNAUTHENTICATED') || error.message.includes('CREDENTIALS')) {
+                throw new Error('Invalid or missing Google Gemini API key. Please verify your API key in the Admin Dashboard. Make sure you are using a valid API key from Google AI Studio (https://aistudio.google.com/app/apikey).');
+            }
+            if (error.message.includes('API key')) {
+                throw error;
+            }
         }
         throw new Error("Failed to generate product photoshoot. The image may have been rejected by the AI safety filters. Please try a different description or image.");
     }
@@ -231,6 +248,9 @@ Adhere to these principles and the user's prompt to create a complete thumbnail 
 
     } catch (error) {
         console.error("Error generating thumbnail:", error);
+        if (error instanceof Error && (error.message.includes('UNAUTHENTICATED') || error.message.includes('CREDENTIALS'))) {
+            throw new Error('Invalid Google Gemini API key. Please verify your API key in the Admin Dashboard.');
+        }
         throw new Error("Failed to generate thumbnail. Please try again.");
     }
 };
@@ -285,6 +305,9 @@ export const reimagineImage = async (prompt: string, image?: ImagePart, userId?:
         }
     } catch (error) {
         console.error("Error in reimagineImage:", error);
+        if (error instanceof Error && (error.message.includes('UNAUTHENTICATED') || error.message.includes('CREDENTIALS'))) {
+            throw new Error('Invalid Google Gemini API key. Please verify your API key in the Admin Dashboard.');
+        }
         throw new Error("Failed to generate image. The prompt may have been rejected or the service is unavailable.");
     }
 };
