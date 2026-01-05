@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { HistoryItem, HistoryContextType, ImagePart } from '../types';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
@@ -13,7 +13,7 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [mathVisualizerHistory, setMathVisualizerHistory] = useState<HistoryItem[]>([]);
   const { user } = useAuth();
 
-  const addThumbnail = async (imageData: string, prompt: string, assets: ImagePart[]) => {
+  const addThumbnail = useCallback(async (imageData: string, prompt: string, assets: ImagePart[]) => {
     const newItem: HistoryItem = {
       id: Date.now().toString(),
       title: `Thumbnail #${thumbnailHistory.length + 1}`,
@@ -46,12 +46,13 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         alert('Failed to save thumbnail to history');
       }
     }
-  };
+  }, [user, thumbnailHistory]);
 
-  const addProductPhotoShoot = async (imageData: string, prompt: string, asset: ImagePart) => {
+  const addProductPhotoShoot = useCallback(async (imageData: string, prompt: string, asset: ImagePart) => {
     console.log('📦 Adding product photoshoot to history...');
     console.log(`  - Image data size: ${Math.round(imageData.length / 1024)}KB`);
     console.log(`  - Prompt: ${prompt.slice(0, 50)}...`);
+    console.log(`  - User from context: ${user ? user.id : 'NULL'}`);
 
     const newItem: HistoryItem = {
       id: Date.now().toString(),
@@ -88,10 +89,11 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     } else {
       console.warn('⚠️ No user logged in, skipping database save');
+      console.warn('   User object:', user);
     }
-  };
+  }, [user, productPhotoShootHistory]);
 
-  const addReimaginerItem = async (imageData: string, prompt: string, asset?: ImagePart) => {
+  const addReimaginerItem = useCallback(async (imageData: string, prompt: string, asset?: ImagePart) => {
     const newItem: HistoryItem = {
       id: Date.now().toString(),
       title: `Reimagined #${reimaginerHistory.length + 1}`,
@@ -124,9 +126,9 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         alert('Failed to save reimagined image to history');
       }
     }
-  };
+  }, [user, reimaginerHistory]);
 
-  const addMathVisualization = async (imageData: string, prompt: string) => {
+  const addMathVisualization = useCallback(async (imageData: string, prompt: string) => {
     const newItem: HistoryItem = {
       id: Date.now().toString(),
       title: `Visualization #${mathVisualizerHistory.length + 1}`,
@@ -151,7 +153,7 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.error('Error saving visualization to database:', error);
       }
     }
-  };
+  }, [user, mathVisualizerHistory]);
 
   const deleteThumbnail = (id: string) => {
     setThumbnailHistory(prev => prev.filter(item => item.id !== id));
@@ -174,7 +176,6 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     thumbnailHistory,
     productPhotoShootHistory,
     reimaginerHistory,
-    // Fix: Provide math visualizer history and actions.
     mathVisualizerHistory,
     addThumbnail,
     addProductPhotoShoot,
@@ -184,7 +185,16 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     deleteProductPhotoShoot,
     deleteReimaginerItem,
     deleteMathVisualization
-  }), [thumbnailHistory, productPhotoShootHistory, reimaginerHistory, mathVisualizerHistory]);
+  }), [
+    thumbnailHistory,
+    productPhotoShootHistory,
+    reimaginerHistory,
+    mathVisualizerHistory,
+    addThumbnail,
+    addProductPhotoShoot,
+    addReimaginerItem,
+    addMathVisualization
+  ]);
 
   return (
     <HistoryContext.Provider value={value}>
