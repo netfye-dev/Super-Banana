@@ -10,6 +10,8 @@ import * as geminiService from '../services/geminiService';
 import { useHistory } from '../hooks/useHistory';
 import { useSettings } from '../hooks/useSettings';
 import { ImagePart } from '../types';
+import { useAuth } from '../hooks/useAuth';
+import { checkUsageLimit, logUsage } from '../services/usageService';
 
 
 interface ImageFile {
@@ -22,6 +24,7 @@ const ProductPage: React.FC = () => {
     const navigate = useNavigate();
     const { addProductPhotoShoot, productPhotoShootHistory } = useHistory();
     const { productPhotoShootExamples } = useSettings();
+    const { user } = useAuth();
     const [imageFile, setImageFile] = useState<ImageFile | null>(null);
     const [prompt, setPrompt] = useState<string>('On a white marble countertop with soft, natural morning light.');
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -63,6 +66,19 @@ const ProductPage: React.FC = () => {
             alert('Please upload a product image first.');
             return;
         }
+
+        if (!user?.id) {
+            alert('You must be logged in to generate images.');
+            return;
+        }
+
+        const usageCheck = await checkUsageLimit(user.id);
+        if (!usageCheck.allowed) {
+            alert(`You have reached your monthly limit of ${usageCheck.limit} generations. Upgrade your plan to continue.`);
+            navigate('/subscription');
+            return;
+        }
+
         setIsLoading(true);
         setGeneratedImage(null);
         setIsSaved(false);
@@ -77,6 +93,10 @@ const ProductPage: React.FC = () => {
             if (result) {
                 const dataUrl = `data:${mimeType};base64,${result}`;
                 setGeneratedImage(dataUrl);
+
+                if (user?.id) {
+                    await logUsage(user.id, 'product_shoot', { prompt });
+                }
             }
         } catch (error) {
             console.error(error);

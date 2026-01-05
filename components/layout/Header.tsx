@@ -17,6 +17,7 @@ const Header: React.FC = () => {
   const { toggleSettings } = useSettings();
   const { user, profile, subscription, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await signOut();
@@ -37,17 +38,50 @@ const Header: React.FC = () => {
         {user && (
           <nav className="hidden md:flex items-center gap-1">
             <Link to="/editor">
-              <Button variant="ghost" size="sm">Thumbnails</Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={location.pathname.startsWith('/editor') ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}
+              >
+                Thumbnails
+              </Button>
             </Link>
             <Link to="/product">
-              <Button variant="ghost" size="sm">Product Photos</Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={location.pathname.startsWith('/product') ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}
+              >
+                Product Photos
+              </Button>
             </Link>
             <Link to="/reimaginer">
-              <Button variant="ghost" size="sm">Reimagine</Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={location.pathname.startsWith('/reimaginer') ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}
+              >
+                Reimagine
+              </Button>
+            </Link>
+            <Link to="/history">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={location.pathname === '/history' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}
+              >
+                History
+              </Button>
             </Link>
             {profile?.is_admin && (
               <Link to="/admin">
-                <Button variant="ghost" size="sm">Admin</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={location.pathname === '/admin' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}
+                >
+                  Admin
+                </Button>
               </Link>
             )}
           </nav>
@@ -57,15 +91,25 @@ const Header: React.FC = () => {
         {user ? (
           <>
             <Link to="/subscription">
-              <Button variant="ghost" size="sm" className="hidden sm:flex">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`hidden sm:flex ${location.pathname === '/subscription' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+              >
                 <span className="text-sm">
                   {subscription?.subscription_plans?.name || 'Free'} Plan
                 </span>
               </Button>
             </Link>
-            <Button variant="ghost" size="sm" onClick={toggleSettings}>
-              <SettingsIcon className="w-5 h-5" />
-            </Button>
+            <Link to="/settings">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={location.pathname === '/settings' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}
+              >
+                <SettingsIcon className="w-5 h-5" />
+              </Button>
+            </Link>
             <Button variant="ghost" size="sm" onClick={toggleTheme}>
               {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
             </Button>

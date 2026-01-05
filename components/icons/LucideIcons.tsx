@@ -81,3 +81,15 @@ export const BananaIcon: React.FC<{ className?: string }> = ({ className }) => (
 	<path fill="#c1694f" d="M2 31c1 0 1 0 1 .667C3 32.333 3 33 2 33s-1-1.333-1-1.333S1 31 2 31"></path>
 </svg>
 );
+
+export const UserIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg {...iconProps} className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+);
+
+export const KeyIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg {...iconProps} className={className}><circle cx="7.5" cy="15.5" r="5.5" /><path d="m21 2-9.6 9.6" /><path d="m15.5 7.5 3 3L22 7l-3-3" /></svg>
+);
+
+export const ImageIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg {...iconProps} className={className}><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+);

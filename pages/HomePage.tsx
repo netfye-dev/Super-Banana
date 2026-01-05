@@ -70,7 +70,7 @@ const LandingPage: React.FC = () => {
 
             <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
               <Card className="h-full">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-4">
                   <ImagePlusIcon className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Product Photography</h3>
@@ -285,7 +285,7 @@ const DashboardHome: React.FC = () => {
           <Link to="/product">
             <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
               <Card className="h-full cursor-pointer hover:ring-2 hover:ring-primary transition-all">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-4">
                   <ImagePlusIcon className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Product Photoshoot</h3>

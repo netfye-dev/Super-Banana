@@ -93,7 +93,7 @@ const AdminPage: React.FC = () => {
 
   if (!profile?.is_admin) {
     return (
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card>
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h2>
@@ -105,7 +105,7 @@ const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h1>
         <p className="text-gray-600 dark:text-gray-400">Manage users, API keys, and subscriptions</p>
@@ -183,9 +183,13 @@ const AdminPage: React.FC = () => {
                       </td>
                       <td className="py-3 px-4">
                         <Button
-                          size="small"
+                          size="sm"
                           variant="secondary"
-                          onClick={() => toggleAdminStatus(user.id, user.is_admin)}
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to ${user.is_admin ? 'remove admin privileges from' : 'grant admin privileges to'} ${user.email}?`)) {
+                              toggleAdminStatus(user.id, user.is_admin);
+                            }
+                          }}
                           disabled={user.id === profile?.id}
                         >
                           {user.is_admin ? 'Remove Admin' : 'Make Admin'}
@@ -267,9 +271,13 @@ const AdminPage: React.FC = () => {
                         </td>
                         <td className="py-3 px-4">
                           <Button
-                            size="small"
+                            size="sm"
                             variant="secondary"
-                            onClick={() => toggleApiKeyStatus(key.id, key.is_active)}
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to ${key.is_active ? 'deactivate' : 'activate'} the API key "${key.name}"?`)) {
+                                toggleApiKeyStatus(key.id, key.is_active);
+                              }
+                            }}
                           >
                             {key.is_active ? 'Deactivate' : 'Activate'}
                           </Button>

@@ -11,6 +11,8 @@ import { THUMBNAIL_PRESETS } from '../constants';
 import * as geminiService from '../services/geminiService';
 import { useHistory } from '../hooks/useHistory';
 import { useSettings } from '../hooks/useSettings';
+import { useAuth } from '../hooks/useAuth';
+import { checkUsageLimit, logUsage } from '../services/usageService';
 
 interface Asset {
   id: string;
@@ -29,6 +31,7 @@ const EditorPage: React.FC = () => {
   const navigate = useNavigate();
   const { addThumbnail, thumbnailHistory } = useHistory();
   const { thumbnailExamples } = useSettings();
+  const { user } = useAuth();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [prompt, setPrompt] = useState<string>('');
   const [preset, setPreset] = useState<Preset>(THUMBNAIL_PRESETS[0]); // Default to YouTube
@@ -93,6 +96,19 @@ const EditorPage: React.FC = () => {
       alert('Please describe the scene you want to generate.');
       return;
     }
+
+    if (!user?.id) {
+      alert('You must be logged in to generate images.');
+      return;
+    }
+
+    const usageCheck = await checkUsageLimit(user.id);
+    if (!usageCheck.allowed) {
+      alert(`You have reached your monthly limit of ${usageCheck.limit} generations. Upgrade your plan to continue.`);
+      navigate('/subscription');
+      return;
+    }
+
     setIsGeneratingScene(true);
     setGeneratedScene(null);
     try {
@@ -100,6 +116,9 @@ const EditorPage: React.FC = () => {
       if (result) {
         const dataUrl = `data:image/jpeg;base64,${result}`;
         setGeneratedScene(dataUrl);
+        if (user?.id) {
+          await logUsage(user.id, 'scene', { prompt: scenePrompt });
+        }
       }
     } catch (error) {
       console.error(error);
@@ -136,6 +155,18 @@ const EditorPage: React.FC = () => {
       return;
     }
 
+    if (!user?.id) {
+      alert('You must be logged in to generate thumbnails.');
+      return;
+    }
+
+    const usageCheck = await checkUsageLimit(user.id);
+    if (!usageCheck.allowed) {
+      alert(`You have reached your monthly limit of ${usageCheck.limit} generations. Upgrade your plan to continue.`);
+      navigate('/subscription');
+      return;
+    }
+
     setIsLoading(true);
     setGeneratedThumbnail(null);
     setIsSaved(false);
@@ -155,6 +186,10 @@ const EditorPage: React.FC = () => {
         const dataUrl = `data:${mimeType};base64,${result}`;
         setGeneratedThumbnail(dataUrl);
         setGenerationData({ prompt, assets: imageParts });
+
+        if (user?.id) {
+          await logUsage(user.id, 'thumbnail', { prompt, preset: preset.name });
+        }
       }
 
     } catch (error) {

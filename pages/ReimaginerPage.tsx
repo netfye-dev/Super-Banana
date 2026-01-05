@@ -8,6 +8,8 @@ import { SparklesIcon, DownloadIcon, SaveIcon, CheckIcon, ImagePlusIcon, TrashIc
 import * as geminiService from '../services/geminiService';
 import { useHistory } from '../hooks/useHistory';
 import { ImagePart } from '../types';
+import { useAuth } from '../hooks/useAuth';
+import { checkUsageLimit, logUsage } from '../services/usageService';
 
 interface ImageFile {
     file: File;
@@ -27,6 +29,7 @@ const ReimaginerPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { addReimaginerItem, reimaginerHistory } = useHistory();
+    const { user } = useAuth();
     
     const [prompt, setPrompt] = useState<string>('');
     const [imageFile, setImageFile] = useState<ImageFile | null>(null);
@@ -88,6 +91,18 @@ const ReimaginerPage: React.FC = () => {
             return;
         }
 
+        if (!user?.id) {
+            alert('You must be logged in to generate images.');
+            return;
+        }
+
+        const usageCheck = await checkUsageLimit(user.id);
+        if (!usageCheck.allowed) {
+            alert(`You have reached your monthly limit of ${usageCheck.limit} generations. Upgrade your plan to continue.`);
+            navigate('/subscription');
+            return;
+        }
+
         setIsLoading(true);
         setGeneratedImage(null);
         setIsSaved(false);
@@ -108,6 +123,10 @@ const ReimaginerPage: React.FC = () => {
                 const mimeType = imagePart ? imagePart.mimeType : 'image/jpeg';
                 const dataUrl = `data:${mimeType};base64,${result}`;
                 setGeneratedImage(dataUrl);
+
+                if (user?.id) {
+                    await logUsage(user.id, 'reimagine', { prompt, hasBaseImage: !!imagePart });
+                }
             }
         } catch (error) {
             console.error(error);
