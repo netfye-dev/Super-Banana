@@ -17,34 +17,44 @@ const Header: React.FC = () => {
   const { toggleSettings } = useSettings();
   const { user, profile, subscription, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/login');
+    navigate('/');
   };
 
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
-
-  if (isAuthPage) {
-    return null;
-  }
-
   return (
-    <header className="flex items-center justify-between h-16 px-4 bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-30 w-full shrink-0">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" className="md:hidden" onClick={toggleSidebar}>
-          <MenuIcon className="w-6 h-6" />
-        </Button>
+    <header className="flex items-center justify-between h-16 px-4 lg:px-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-border sticky top-0 z-50 w-full">
+      <div className="flex items-center gap-6">
         <Link to={"/"}>
           <div className="flex items-center gap-2">
-            <BananaIcon className={`w-8 h-8`} />
-            <h1 className="text-xl font-bold font-serif text-foreground">Promofye</h1>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-sky-600 flex items-center justify-center">
+              <span className="text-xl">🚀</span>
+            </div>
+            <h1 className="text-xl font-bold font-display text-foreground">Promofye</h1>
           </div>
         </Link>
+        {user && (
+          <nav className="hidden md:flex items-center gap-1">
+            <Link to="/editor">
+              <Button variant="ghost" size="sm">Thumbnails</Button>
+            </Link>
+            <Link to="/product">
+              <Button variant="ghost" size="sm">Product Photos</Button>
+            </Link>
+            <Link to="/reimaginer">
+              <Button variant="ghost" size="sm">Reimagine</Button>
+            </Link>
+            {profile?.is_admin && (
+              <Link to="/admin">
+                <Button variant="ghost" size="sm">Admin</Button>
+              </Link>
+            )}
+          </nav>
+        )}
       </div>
       <div className="flex items-center gap-2">
-        {user && (
+        {user ? (
           <>
             <Link to="/subscription">
               <Button variant="ghost" size="sm" className="hidden sm:flex">
@@ -63,11 +73,18 @@ const Header: React.FC = () => {
               Logout
             </Button>
           </>
-        )}
-        {!user && (
-          <Button variant="ghost" size="sm" onClick={toggleTheme}>
-            {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
-          </Button>
+        ) : (
+          <>
+            <Button variant="ghost" size="sm" onClick={toggleTheme}>
+              {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
+            </Button>
+            <Link to="/login">
+              <Button variant="ghost" size="sm">Sign In</Button>
+            </Link>
+            <Link to="/signup">
+              <Button size="sm">Sign Up</Button>
+            </Link>
+          </>
         )}
       </div>
     </header>

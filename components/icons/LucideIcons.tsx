@@ -58,6 +58,10 @@ export const CheckIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg {...iconProps} className={className}><polyline points="20 6 9 17 4 12" /></svg>
 );
 
+export const ArrowRightIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg {...iconProps} className={className}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+);
+
 // Fix: Add SigmaIcon for the Math Visualizer page.
 export const SigmaIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg {...iconProps} className={className}><path d="M4 7V4h16v3l-8 7 8 7v3H4v-3l8-7-8-7z"/></svg>

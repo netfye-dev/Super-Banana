@@ -6,7 +6,6 @@ import { HistoryProvider } from './hooks/useHistory';
 import { SettingsProvider } from './hooks/useSettings';
 import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import SettingsModal from './components/layout/SettingsModal';
 import HomePage from './pages/HomePage';
@@ -41,7 +40,7 @@ const AnimatedRoutes: React.FC = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/editor/:id?" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
         <Route path="/product/:id?" element={<ProtectedRoute><ProductPage /></ProtectedRoute>} />
         <Route path="/reimaginer/:id?" element={<ProtectedRoute><ReimaginerPage /></ProtectedRoute>} />
@@ -54,31 +53,16 @@ const AnimatedRoutes: React.FC = () => {
   );
 };
 
-const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <motion.div
-    initial="initial"
-    animate="in"
-    exit="out"
-    variants={pageVariants}
-    transition={pageTransition}
-    className="flex-1 p-4 sm:p-6 lg:p-8"
-  >
-    {children}
-  </motion.div>
-);
-
 const AppContent: React.FC = () => {
+  const location = useLocation();
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground">
-        <Header />
-        <div className="flex flex-1 overflow-hidden">
-            <Sidebar />
-            <main className="flex-1 overflow-y-auto">
-                <PageWrapper>
-                    <AnimatedRoutes />
-                </PageWrapper>
-            </main>
-        </div>
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+        {!isAuthPage && <Header />}
+        <main className="flex-1">
+            <AnimatedRoutes />
+        </main>
         <SettingsModal />
     </div>
   );
