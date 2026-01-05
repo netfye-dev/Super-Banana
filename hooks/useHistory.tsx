@@ -26,7 +26,7 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     if (user) {
       try {
-        await supabase.from('generated_images').insert({
+        const { data, error } = await supabase.from('generated_images').insert({
           user_id: user.id,
           title: newItem.title,
           prompt,
@@ -34,8 +34,16 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           image_type: 'thumbnail',
           metadata: { assets }
         });
+
+        if (error) {
+          console.error('Error saving thumbnail to database:', error);
+          alert('Failed to save thumbnail to history: ' + error.message);
+        } else {
+          console.log('Thumbnail saved successfully:', data);
+        }
       } catch (error) {
         console.error('Error saving thumbnail to database:', error);
+        alert('Failed to save thumbnail to history');
       }
     }
   };
@@ -53,7 +61,7 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     if (user) {
       try {
-        await supabase.from('generated_images').insert({
+        const { data, error } = await supabase.from('generated_images').insert({
           user_id: user.id,
           title: newItem.title,
           prompt,
@@ -61,8 +69,16 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           image_type: 'product',
           metadata: { asset }
         });
+
+        if (error) {
+          console.error('Error saving product photo to database:', error);
+          alert('Failed to save product photo to history: ' + error.message);
+        } else {
+          console.log('Product photo saved successfully:', data);
+        }
       } catch (error) {
         console.error('Error saving product photo to database:', error);
+        alert('Failed to save product photo to history');
       }
     }
   };
@@ -80,7 +96,7 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     if (user) {
       try {
-        await supabase.from('generated_images').insert({
+        const { data, error } = await supabase.from('generated_images').insert({
           user_id: user.id,
           title: newItem.title,
           prompt,
@@ -88,8 +104,16 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           image_type: 'reimagine',
           metadata: asset ? { asset } : {}
         });
+
+        if (error) {
+          console.error('Error saving reimagined image to database:', error);
+          alert('Failed to save reimagined image to history: ' + error.message);
+        } else {
+          console.log('Reimagined image saved successfully:', data);
+        }
       } catch (error) {
         console.error('Error saving reimagined image to database:', error);
+        alert('Failed to save reimagined image to history');
       }
     }
   };
