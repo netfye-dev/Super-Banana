@@ -19,10 +19,11 @@ const LoginPage: React.FC = () => {
 
     try {
       await signIn(email, password);
-      navigate('/');
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 100);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in');
-    } finally {
       setLoading(false);
     }
   };

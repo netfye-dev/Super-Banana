@@ -14,7 +14,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Spinner size="large" />
+        <div className="text-center">
+          <Spinner size="large" />
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }

@@ -59,9 +59,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let mounted = true;
+
     (async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
         setUser(session?.user ?? null);
         if (session?.user) {
           await loadUserData(session.user.id);
@@ -69,29 +73,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Error in initial session load:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     })();
 
     const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        try {
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await loadUserData(session.user.id);
-          } else {
-            setProfile(null);
-            setSubscription(null);
+      (event, session) => {
+        (async () => {
+          try {
+            if (!mounted) return;
+
+            console.log('Auth state changed:', event);
+            setUser(session?.user ?? null);
+
+            if (session?.user) {
+              await loadUserData(session.user.id);
+            } else {
+              setProfile(null);
+              setSubscription(null);
+            }
+          } catch (error) {
+            console.error('Error in auth state change:', error);
+          } finally {
+            if (mounted) {
+              setLoading(false);
+            }
           }
-        } catch (error) {
-          console.error('Error in auth state change:', error);
-        } finally {
-          setLoading(false);
-        }
+        })();
       }
     );
 
     return () => {
+      mounted = false;
       authListener.unsubscribe();
     };
   }, []);
