@@ -4,8 +4,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { checkUsageLimit } from '../../services/usageService';
 
 const UsageBadge: React.FC = () => {
-  const { user, subscription } = useAuth();
-  const [usage, setUsage] = useState<{ remaining: number; limit: number } | null>(null);
+  const { user, subscription, profile } = useAuth();
+  const [usage, setUsage] = useState<{ remaining: number; limit: number; isAdmin?: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const UsageBadge: React.FC = () => {
 
     try {
       const result = await checkUsageLimit(user.id);
-      setUsage({ remaining: result.remaining, limit: result.limit });
+      setUsage({ remaining: result.remaining, limit: result.limit, isAdmin: result.isAdmin });
     } catch (error) {
       console.error('Error loading usage:', error);
     } finally {
@@ -29,6 +29,23 @@ const UsageBadge: React.FC = () => {
   };
 
   if (loading || !usage) return null;
+
+  if (usage.isAdmin || profile?.is_admin) {
+    return (
+      <Link
+        to="/subscription"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 text-purple-700 dark:text-purple-400 border border-purple-300 dark:border-purple-700"
+      >
+        <div className="flex items-center gap-2">
+          <div className="flex flex-col items-start">
+            <span className="text-xs opacity-75">Admin Access</span>
+            <span className="font-bold">Unlimited</span>
+          </div>
+          <div className="text-xl">∞</div>
+        </div>
+      </Link>
+    );
+  }
 
   const usagePercent = usage.limit > 0 ? ((usage.limit - usage.remaining) / usage.limit) * 100 : 0;
   const isLow = usage.remaining <= 3;

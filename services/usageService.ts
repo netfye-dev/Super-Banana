@@ -1,7 +1,17 @@
 import { supabase } from '../lib/supabase';
 
-export const checkUsageLimit = async (userId: string): Promise<{ allowed: boolean; remaining: number; limit: number }> => {
+export const checkUsageLimit = async (userId: string): Promise<{ allowed: boolean; remaining: number; limit: number; isAdmin?: boolean }> => {
   try {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (profile?.is_admin) {
+      return { allowed: true, remaining: 999999, limit: 999999, isAdmin: true };
+    }
+
     const { data: subscription } = await supabase
       .from('user_subscriptions')
       .select('*, subscription_plans(*)')
