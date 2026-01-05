@@ -123,7 +123,7 @@ const ProductPage: React.FC = () => {
 
 
     return (
-        <div className="container mx-auto max-w-5xl">
+        <div className="container mx-auto max-w-5xl px-4 py-8">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mb-8">
                 <h1 className="text-4xl font-bold font-serif">Product Photoshoot</h1>
                 <p className="text-muted-foreground mt-2">Upload your product, describe a scene, and let AI create stunning photos.</p>

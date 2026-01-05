@@ -217,7 +217,7 @@ const EditorPage: React.FC = () => {
   }, [generatedThumbnail]);
 
   return (
-    <div className="container mx-auto max-w-7xl">
+    <div className="container mx-auto max-w-7xl px-4 py-8">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mb-8">
         <h1 className="text-4xl font-bold font-serif">Thumbnail Builder</h1>
         <p className="text-muted-foreground mt-2">Upload your assets, describe your video, and let AI create stunning thumbnails.</p>

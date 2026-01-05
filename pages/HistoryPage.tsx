@@ -5,7 +5,7 @@ import { HistoryIcon } from '../components/icons/LucideIcons';
 
 const HistoryPage: React.FC = () => {
   return (
-    <div>
+    <div className="container mx-auto max-w-7xl px-4 py-8">
       <h1 className="text-4xl font-bold font-serif mb-6">Your History</h1>
       <Card>
         <CardContent>
