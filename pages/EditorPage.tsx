@@ -112,13 +112,10 @@ const EditorPage: React.FC = () => {
     setIsGeneratingScene(true);
     setGeneratedScene(null);
     try {
-      const result = await geminiService.generateScene(scenePrompt);
+      const result = await geminiService.generateScene(scenePrompt, user.id);
       if (result) {
         const dataUrl = `data:image/jpeg;base64,${result}`;
         setGeneratedScene(dataUrl);
-        if (user?.id) {
-          await logUsage(user.id, 'scene', { prompt: scenePrompt });
-        }
       }
     } catch (error) {
       console.error(error);
@@ -179,7 +176,7 @@ const EditorPage: React.FC = () => {
         };
       }));
 
-      const result = await geminiService.generateThumbnail(prompt, imageParts, preset.name, thumbnailExamples);
+      const result = await geminiService.generateThumbnail(prompt, imageParts, preset.name, thumbnailExamples, user.id);
 
       if (result) {
         const mimeType = imageParts[0]?.mimeType || 'image/png';
@@ -190,10 +187,6 @@ const EditorPage: React.FC = () => {
         // Auto-save to history
         await addThumbnail(dataUrl, prompt, imageParts);
         setIsSaved(true);
-
-        if (user?.id) {
-          await logUsage(user.id, 'thumbnail', { prompt, preset: preset.name });
-        }
       }
 
     } catch (error) {

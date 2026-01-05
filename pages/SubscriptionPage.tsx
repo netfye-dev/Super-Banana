@@ -26,7 +26,7 @@ const SubscriptionPage: React.FC = () => {
 
       setPlans(plansData || []);
 
-      if (profile?.id) {
+      if (profile?.id && !profile?.is_admin) {
         const usage = await getMonthlyUsage(profile.id);
         setMonthlyUsage(usage);
       }
@@ -49,10 +49,11 @@ const SubscriptionPage: React.FC = () => {
     );
   }
 
+  const isAdmin = profile?.is_admin || false;
   const currentPlan = subscription?.subscription_plans;
-  const limit = currentPlan?.image_generations_limit || 0;
-  const remaining = Math.max(0, limit - monthlyUsage);
-  const usagePercent = limit > 0 ? (monthlyUsage / limit) * 100 : 0;
+  const limit = isAdmin ? 999999 : (currentPlan?.image_generations_limit || 0);
+  const remaining = isAdmin ? 999999 : Math.max(0, limit - monthlyUsage);
+  const usagePercent = isAdmin ? 0 : (limit > 0 ? (monthlyUsage / limit) * 100 : 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -65,9 +66,11 @@ const SubscriptionPage: React.FC = () => {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Current Plan</h2>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{currentPlan?.name || 'Free'}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {isAdmin ? 'Admin Access' : currentPlan?.name || 'Free'}
+            </p>
             <p className="text-gray-600 dark:text-gray-400">
-              ${((currentPlan?.monthly_price || 0) / 100).toFixed(2)}/month
+              {isAdmin ? 'Unlimited access' : `$${((currentPlan?.monthly_price || 0) / 100).toFixed(2)}/month`}
             </p>
           </div>
           <div className="text-right">
@@ -82,34 +85,55 @@ const SubscriptionPage: React.FC = () => {
           <div className="flex justify-between text-sm mb-2">
             <span className="text-gray-600 dark:text-gray-400">Monthly Usage</span>
             <span className="font-medium text-gray-900 dark:text-white">
-              {monthlyUsage} / {limit} generations
+              {isAdmin ? `${monthlyUsage} / Unlimited generations` : `${monthlyUsage} / ${limit} generations`}
             </span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all ${
-                usagePercent >= 90
+                isAdmin
+                  ? 'bg-green-600'
+                  : usagePercent >= 90
                   ? 'bg-red-600'
                   : usagePercent >= 70
                   ? 'bg-yellow-600'
                   : 'bg-blue-600'
               }`}
-              style={{ width: `${Math.min(usagePercent, 100)}%` }}
+              style={{ width: isAdmin ? '100%' : `${Math.min(usagePercent, 100)}%` }}
             />
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{remaining} generations remaining</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {isAdmin ? 'Unlimited generations available' : `${remaining} generations remaining`}
+          </p>
         </div>
 
-        {currentPlan?.features && (
+        {(isAdmin || currentPlan?.features) && (
           <div className="mt-6">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Features:</p>
             <ul className="space-y-1">
-              {currentPlan.features.map((feature: string, index: number) => (
-                <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                  <span className="text-green-600 dark:text-green-400 mr-2">✓</span>
-                  {feature}
-                </li>
-              ))}
+              {isAdmin ? (
+                <>
+                  <li className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                    <span className="text-green-600 dark:text-green-400 mr-2">✓</span>
+                    Unlimited image generations/month
+                  </li>
+                  <li className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                    <span className="text-green-600 dark:text-green-400 mr-2">✓</span>
+                    Full system access
+                  </li>
+                  <li className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                    <span className="text-green-600 dark:text-green-400 mr-2">✓</span>
+                    Admin dashboard access
+                  </li>
+                </>
+              ) : (
+                currentPlan?.features?.map((feature: string, index: number) => (
+                  <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                    <span className="text-green-600 dark:text-green-400 mr-2">✓</span>
+                    {feature}
+                  </li>
+                ))
+              )}
             </ul>
           </div>
         )}

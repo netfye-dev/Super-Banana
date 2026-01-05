@@ -117,7 +117,7 @@ const ReimaginerPage: React.FC = () => {
                 setGenerationAsset(imagePart);
             }
             
-            const result = await geminiService.reimagineImage(prompt, imagePart);
+            const result = await geminiService.reimagineImage(prompt, imagePart, user.id);
 
             if (result) {
                 const mimeType = imagePart ? imagePart.mimeType : 'image/jpeg';
@@ -127,10 +127,6 @@ const ReimaginerPage: React.FC = () => {
                 // Auto-save to history
                 await addReimaginerItem(dataUrl, prompt, imagePart);
                 setIsSaved(true);
-
-                if (user?.id) {
-                    await logUsage(user.id, 'reimagine', { prompt, hasBaseImage: !!imagePart });
-                }
             }
         } catch (error) {
             console.error(error);
