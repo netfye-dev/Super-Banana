@@ -72,19 +72,40 @@ export const fileToBase64 = (file: File): Promise<string> => {
 const mockImageResponse = async (prompt: string): Promise<string> => {
     await new Promise(res => setTimeout(res, 1500));
     console.log(`Mock AI call for: ${prompt}`);
-    const color1 = Math.floor(Math.random()*16777215).toString(16);
-    const color2 = Math.floor(Math.random()*16777215).toString(16);
-    const mockImageUrl = `https://via.placeholder.com/1024x1024/${color1}/${color2}?text=${encodeURIComponent(prompt.slice(0, 50))}`;
-    
-    // Convert URL to base64 to simulate API response format
-    const response = await fetch(mockImageUrl);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onload = () => resolve((reader.result as string).split(',')[1]);
-        reader.onerror = error => reject(error);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+        throw new Error('Failed to create canvas context');
+    }
+
+    const hue1 = Math.floor(Math.random() * 360);
+    const hue2 = (hue1 + 60) % 360;
+    const gradient = ctx.createLinearGradient(0, 0, 1024, 1024);
+    gradient.addColorStop(0, `hsl(${hue1}, 70%, 60%)`);
+    gradient.addColorStop(1, `hsl(${hue2}, 70%, 50%)`);
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const text = prompt.slice(0, 50);
+    const lines = text.match(/.{1,30}/g) || [text];
+    const lineHeight = 40;
+    const startY = 512 - ((lines.length - 1) * lineHeight) / 2;
+
+    lines.forEach((line, i) => {
+        ctx.fillText(line, 512, startY + i * lineHeight);
     });
+
+    return canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
 };
 
 export const generateScene = async (prompt: string, userId?: string): Promise<string | null> => {
