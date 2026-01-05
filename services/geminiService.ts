@@ -122,7 +122,7 @@ const mockImageResponse = async (prompt: string): Promise<string> => {
 export const generateScene = async (prompt: string, userId?: string): Promise<string | null> => {
     const apiKey = await getActiveApiKey();
     if (!apiKey) {
-        return mockImageResponse(prompt);
+        throw new Error('No active API key found. Please contact your administrator to configure Google Gemini API in the Admin Dashboard.');
     }
 
     if (userId) {
@@ -157,7 +157,7 @@ export const generateScene = async (prompt: string, userId?: string): Promise<st
 export const generateProductPhotoShoot = async (base64ImageData: string, mimeType: string, prompt: string, examples: ImagePart[], userId?: string): Promise<string | null> => {
     const apiKey = await getActiveApiKey();
     if (!apiKey) {
-        return mockImageResponse(prompt);
+        throw new Error('No active API key found. Please contact your administrator to configure Google Gemini API in the Admin Dashboard.');
     }
 
     if (userId) {
@@ -219,7 +219,7 @@ Use the examples as a strict style guide. Then, apply that style to the user's s
 export const generateThumbnail = async (prompt: string, images: ImagePart[], presetName: string, examples: ImagePart[], userId?: string): Promise<string | null> => {
     const apiKey = await getActiveApiKey();
     if (!apiKey) {
-        return mockImageResponse(`Thumbnail for: ${prompt}`);
+        throw new Error('No active API key found. Please contact your administrator to configure Google Gemini API in the Admin Dashboard.');
     }
 
     if (userId) {
@@ -290,7 +290,7 @@ Adhere to these principles and the user's prompt to create a complete thumbnail 
 export const reimagineImage = async (prompt: string, image?: ImagePart, userId?: string): Promise<string | null> => {
     const apiKey = await getActiveApiKey();
     if (!apiKey) {
-        return mockImageResponse(prompt);
+        throw new Error('No active API key found. Please contact your administrator to configure Google Gemini API in the Admin Dashboard.');
     }
 
     if (userId) {

@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import Button from '../ui/Button';
+import UsageBadge from '../ui/UsageBadge';
 import { SunIcon, MoonIcon, MenuIcon, BananaIcon, SettingsIcon } from '../icons/LucideIcons';
 import { useSettings } from '../../hooks/useSettings';
 
@@ -95,17 +96,9 @@ const Header: React.FC = () => {
       <div className="flex items-center gap-2">
         {user ? (
           <>
-            <Link to="/subscription">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`hidden sm:flex ${location.pathname === '/subscription' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
-              >
-                <span className="text-sm">
-                  {subscription?.subscription_plans?.name || 'Free'} Plan
-                </span>
-              </Button>
-            </Link>
+            <div className="hidden sm:block">
+              <UsageBadge />
+            </div>
             <Link to="/settings">
               <Button
                 variant="ghost"
