@@ -251,6 +251,8 @@ const LandingPage: React.FC = () => {
 const DashboardHome: React.FC = () => {
   const { profile, subscription } = useAuth();
 
+  console.log('DashboardHome rendering - Profile:', profile, 'Subscription:', subscription);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <motion.div
@@ -332,7 +334,20 @@ const DashboardHome: React.FC = () => {
 };
 
 const HomePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  console.log('HomePage - User:', user, 'Loading:', loading);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return user ? <DashboardHome /> : <LandingPage />;
 };
