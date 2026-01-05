@@ -1,12 +1,55 @@
 
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from "@google/genai";
 import { ImagePart } from '../types';
+import { supabase } from '../lib/supabase';
+import { checkUsageLimit, logUsage } from './usageService';
 
-if (!process.env.API_KEY) {
-    console.warn("API_KEY environment variable not set. Using mock service.");
-}
+let cachedApiKey: string | null = null;
+let ai: GoogleGenAI | null = null;
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "mock-key" });
+const getActiveApiKey = async (): Promise<string | null> => {
+  if (cachedApiKey) return cachedApiKey;
+
+  try {
+    const { data } = await supabase
+      .from('api_keys')
+      .select('api_key')
+      .eq('provider', 'google_gemini')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (data?.api_key) {
+      cachedApiKey = data.api_key;
+      return data.api_key;
+    }
+  } catch (error) {
+    console.error('Error fetching API key:', error);
+  }
+
+  return process.env.API_KEY || null;
+};
+
+const getAiClient = async (): Promise<GoogleGenAI> => {
+  if (ai) return ai;
+
+  const apiKey = await getActiveApiKey();
+  if (!apiKey) {
+    throw new Error('No API key available. Please contact administrator.');
+  }
+
+  ai = new GoogleGenAI({ apiKey });
+  return ai;
+};
+
+const checkAndLogUsage = async (userId: string, actionType: 'thumbnail' | 'product_shoot' | 'reimagine' | 'scene') => {
+  const { allowed, remaining } = await checkUsageLimit(userId);
+
+  if (!allowed) {
+    throw new Error(`Usage limit exceeded. You have ${remaining} generations remaining this month.`);
+  }
+
+  await logUsage(userId, actionType);
+};
 
 export const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -35,12 +78,19 @@ const mockImageResponse = async (prompt: string): Promise<string> => {
     });
 };
 
-export const generateScene = async (prompt: string): Promise<string | null> => {
-    if (!process.env.API_KEY) {
+export const generateScene = async (prompt: string, userId?: string): Promise<string | null> => {
+    const apiKey = await getActiveApiKey();
+    if (!apiKey) {
         return mockImageResponse(prompt);
     }
+
+    if (userId) {
+        await checkAndLogUsage(userId, 'scene');
+    }
+
     try {
-        const response = await ai.models.generateImages({
+        const client = await getAiClient();
+        const response = await client.models.generateImages({
             model: 'imagen-4.0-generate-001',
             prompt: `A high-quality, professional background scene for a thumbnail, based on the following description: ${prompt}`,
             config: {
@@ -60,12 +110,18 @@ export const generateScene = async (prompt: string): Promise<string | null> => {
     }
 };
 
-export const generateProductPhotoShoot = async (base64ImageData: string, mimeType: string, prompt: string, examples: ImagePart[]): Promise<string | null> => {
-    if (!process.env.API_KEY) {
+export const generateProductPhotoShoot = async (base64ImageData: string, mimeType: string, prompt: string, examples: ImagePart[], userId?: string): Promise<string | null> => {
+    const apiKey = await getActiveApiKey();
+    if (!apiKey) {
         return mockImageResponse(prompt);
     }
-    
+
+    if (userId) {
+        await checkAndLogUsage(userId, 'product_shoot');
+    }
+
     try {
+        const client = await getAiClient();
         let systemPrompt: string;
         const contentParts: Part[] = [];
 
@@ -73,30 +129,29 @@ export const generateProductPhotoShoot = async (base64ImageData: string, mimeTyp
             systemPrompt = `You are a professional product photographer. Your task is to place the subject from the user's image into a new scene.
 **Critically, you must emulate the exact style, lighting, mood, and composition of the example images provided.**
 Use the examples as a strict style guide. Then, apply that style to the user's subject and the scene described in their prompt. Ensure the final image is photorealistic and of commercial quality.`;
-            
+
             examples.forEach(ex => {
                 contentParts.push({ inlineData: { data: ex.base64Data, mimeType: ex.mimeType } });
             });
         } else {
-            // Improved Zero-shot
             systemPrompt = `You are a world-class commercial product photographer. Your task is to take the subject from the provided image and place it into a new, photorealistic scene based on the user's prompt.
 **Key requirements:**
 1.  **Photorealism:** The integration must be seamless. The lighting, shadows, reflections, and perspective on the subject MUST perfectly match the new environment described in the prompt.
 2.  **Focus:** The product should be the clear hero of the image.
 3.  **Quality:** The final output must be high-resolution, sharp, and suitable for a professional advertising campaign or e-commerce store.`;
         }
-        
+
         contentParts.push({ inlineData: { data: base64ImageData, mimeType } });
         contentParts.push({ text: `${systemPrompt}\n\n**Scene Prompt:** ${prompt}` });
 
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response: GenerateContentResponse = await client.models.generateContent({
             model: 'gemini-2.5-flash-image-preview',
             contents: { parts: contentParts },
             config: {
                 responseModalities: [Modality.IMAGE, Modality.TEXT],
             },
         });
-        
+
         for (const part of response.candidates[0].content.parts) {
             if (part.inlineData) {
                 return part.inlineData.data;
@@ -109,17 +164,22 @@ Use the examples as a strict style guide. Then, apply that style to the user's s
     }
 };
 
-export const generateThumbnail = async (prompt: string, images: ImagePart[], presetName: string, examples: ImagePart[]): Promise<string | null> => {
-    if (!process.env.API_KEY) {
+export const generateThumbnail = async (prompt: string, images: ImagePart[], presetName: string, examples: ImagePart[], userId?: string): Promise<string | null> => {
+    const apiKey = await getActiveApiKey();
+    if (!apiKey) {
         return mockImageResponse(`Thumbnail for: ${prompt}`);
     }
 
+    if (userId) {
+        await checkAndLogUsage(userId, 'thumbnail');
+    }
+
     try {
+        const client = await getAiClient();
         let systemPrompt: string;
         const contentParts: Part[] = [];
 
         if (examples.length > 0) {
-            // Few-shot prompt
             systemPrompt = `You are a professional graphic designer tasked with creating a thumbnail.
 **Your primary goal is to replicate the artistic style, composition, and visual energy of the example thumbnails provided.**
 Analyze the examples for their use of color, text effects, layout, and overall mood.
@@ -129,7 +189,6 @@ Then, apply this exact style to the new assets and prompt provided by the user t
                 contentParts.push({ inlineData: { data: ex.base64Data, mimeType: ex.mimeType } });
             });
         } else {
-            // Improved Zero-shot prompt
             systemPrompt = `You are a world-class graphic designer specializing in creating viral, eye-catching thumbnails for platforms like YouTube.
 Your task is to generate a single, cohesive, and professional thumbnail image based on the provided assets and user prompt.
 
@@ -143,7 +202,7 @@ Your task is to generate a single, cohesive, and professional thumbnail image ba
 **Your Task:**
 Adhere to these principles and the user's prompt to create a complete thumbnail for the ${presetName} platform.`;
         }
-        
+
         images.forEach(image => {
             contentParts.push({
                 inlineData: { data: image.base64Data, mimeType: image.mimeType }
@@ -152,7 +211,7 @@ Adhere to these principles and the user's prompt to create a complete thumbnail 
 
         contentParts.push({ text: `${systemPrompt}\n\nUser Prompt: ${prompt}` });
 
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response: GenerateContentResponse = await client.models.generateContent({
             model: 'gemini-2.5-flash-image-preview',
             contents: { parts: contentParts },
             config: {
@@ -173,15 +232,21 @@ Adhere to these principles and the user's prompt to create a complete thumbnail 
     }
 };
 
-export const reimagineImage = async (prompt: string, image?: ImagePart): Promise<string | null> => {
-    if (!process.env.API_KEY) {
+export const reimagineImage = async (prompt: string, image?: ImagePart, userId?: string): Promise<string | null> => {
+    const apiKey = await getActiveApiKey();
+    if (!apiKey) {
         return mockImageResponse(prompt);
     }
 
+    if (userId) {
+        await checkAndLogUsage(userId, 'reimagine');
+    }
+
     try {
-        // Case 1: Image-to-Image (Editing)
+        const client = await getAiClient();
+
         if (image) {
-            const response = await ai.models.generateContent({
+            const response = await client.models.generateContent({
                 model: 'gemini-2.5-flash-image-preview',
                 contents: {
                     parts: [
@@ -199,10 +264,9 @@ export const reimagineImage = async (prompt: string, image?: ImagePart): Promise
                 }
             }
             return null;
-        } 
-        // Case 2: Text-to-Image
+        }
         else {
-            const response = await ai.models.generateImages({
+            const response = await client.models.generateImages({
                 model: 'imagen-4.0-generate-001',
                 prompt: prompt,
                 config: {
