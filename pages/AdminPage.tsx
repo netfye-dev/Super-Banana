@@ -108,9 +108,12 @@ const AdminPage: React.FC = () => {
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h2>
             <p className="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
-            <p className="text-sm text-gray-500 dark:text-gray-500 mt-4">
-              Current user: {profile?.email || 'Not logged in'}
-            </p>
+            <div className="text-sm text-gray-500 dark:text-gray-500 mt-4 space-y-1">
+              <p>Current user: {profile?.email || 'Not logged in'}</p>
+              <p>User ID: {profile?.id || 'N/A'}</p>
+              <p>Is Admin: {profile?.is_admin ? 'Yes' : 'No'}</p>
+              <p>Profile loaded: {profile ? 'Yes' : 'No'}</p>
+            </div>
           </div>
         </Card>
       </div>

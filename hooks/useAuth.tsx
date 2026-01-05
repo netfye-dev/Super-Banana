@@ -23,13 +23,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadUserData = async (userId: string) => {
     try {
+      console.log('Loading user data for:', userId);
+
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
 
-      if (profileError) throw profileError;
+      console.log('Profile data:', profileData, 'Error:', profileError);
+
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw profileError;
+      }
+
       setProfile(profileData);
 
       const { data: subData, error: subError } = await supabase
@@ -38,7 +46,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (subError) throw subError;
+      console.log('Subscription data:', subData, 'Error:', subError);
+
+      if (subError) {
+        console.error('Subscription error:', subError);
+      }
+
       setSubscription(subData);
     } catch (error) {
       console.error('Error loading user data:', error);
