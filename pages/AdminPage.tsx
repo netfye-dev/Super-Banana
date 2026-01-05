@@ -539,6 +539,11 @@ const AdminPage: React.FC = () => {
               {showAddApiKey && (
                 <Card className="mb-4 bg-gray-50 dark:bg-gray-800">
                   <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">Add New API Key</h4>
+                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      <strong>Important:</strong> For image generation, use <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/40 rounded">google_gemini</code> as the provider name.
+                    </p>
+                  </div>
                   <div className="space-y-3">
                     <Input
                       placeholder="Name (e.g., Google Gemini API)"
@@ -546,7 +551,7 @@ const AdminPage: React.FC = () => {
                       onChange={(e) => setNewApiKey({ ...newApiKey, name: e.target.value })}
                     />
                     <Input
-                      placeholder="Provider (e.g., google_gemini)"
+                      placeholder="Provider (must be: google_gemini)"
                       value={newApiKey.provider}
                       onChange={(e) => setNewApiKey({ ...newApiKey, provider: e.target.value })}
                     />

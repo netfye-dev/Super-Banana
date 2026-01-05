@@ -34,7 +34,7 @@ const getAiClient = async (): Promise<GoogleGenAI> => {
 
   const apiKey = await getActiveApiKey();
   if (!apiKey) {
-    throw new Error('No API key available. Please contact administrator.');
+    throw new Error('No Google Gemini API key configured. Please contact your administrator to add an API key in the Admin Dashboard.');
   }
 
   ai = new GoogleGenAI({ apiKey });
@@ -160,7 +160,10 @@ Use the examples as a strict style guide. Then, apply that style to the user's s
         return null;
     } catch (error) {
         console.error("Error generating product photoshoot:", error);
-        throw new Error("Failed to generate product photoshoot. Please try again.");
+        if (error instanceof Error && error.message.includes('API key')) {
+            throw error;
+        }
+        throw new Error("Failed to generate product photoshoot. The image may have been rejected by the AI safety filters. Please try a different description or image.");
     }
 };
 

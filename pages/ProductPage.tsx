@@ -88,15 +88,11 @@ const ProductPage: React.FC = () => {
             
             setGenerationAsset({ base64Data: base64, mimeType });
             
-            const result = await geminiService.generateProductPhotoShoot(base64, mimeType, prompt, productPhotoShootExamples);
+            const result = await geminiService.generateProductPhotoShoot(base64, mimeType, prompt, productPhotoShootExamples, user.id);
 
             if (result) {
                 const dataUrl = `data:${mimeType};base64,${result}`;
                 setGeneratedImage(dataUrl);
-
-                if (user?.id) {
-                    await logUsage(user.id, 'product_shoot', { prompt });
-                }
             }
         } catch (error) {
             console.error(error);
