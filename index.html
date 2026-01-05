@@ -13,65 +13,77 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
       :root {
-        --background: #f8f5f0;
-        --foreground: #3e2723;
-        --card: #f8f5f0;
-        --card-foreground: #3e2723;
-        --popover: #f8f5f0;
-        --popover-foreground: #3e2723;
-        --primary: #2e7d32;
+        --background: #ffffff;
+        --foreground: #0f172a;
+        --card: #ffffff;
+        --card-foreground: #0f172a;
+        --popover: #ffffff;
+        --popover-foreground: #0f172a;
+        --primary: #0ea5e9;
         --primary-foreground: #ffffff;
-        --secondary: #e8f5e9;
-        --secondary-foreground: #1b5e20;
-        --muted: #f0e9e0;
-        --muted-foreground: #6d4c41;
-        --accent: #c8e6c9;
-        --accent-foreground: #1b5e20;
-        --destructive: #c62828;
+        --secondary: #f1f5f9;
+        --secondary-foreground: #334155;
+        --muted: #f8fafc;
+        --muted-foreground: #64748b;
+        --accent: #f0f9ff;
+        --accent-foreground: #0c4a6e;
+        --destructive: #ef4444;
         --destructive-foreground: #ffffff;
-        --border: #e0d6c9;
-        --input: #e0d6c9;
-        --ring: #2e7d32;
-        --sidebar: #f0e9e0;
-        --sidebar-foreground: #3e2723;
-        --sidebar-primary: #2e7d32;
+        --border: #e2e8f0;
+        --input: #f1f5f9;
+        --ring: #0ea5e9;
+        --sidebar: #f8fafc;
+        --sidebar-foreground: #0f172a;
+        --sidebar-primary: #0ea5e9;
         --sidebar-primary-foreground: #ffffff;
-        --radius: 0.5rem;
+        --sidebar-border: #e2e8f0;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --radius: 0.75rem;
       }
 
       .dark {
-        --background: #1c2a1f;
-        --foreground: #f0ebe5;
-        --card: #2d3a2e;
-        --card-foreground: #f0ebe5;
-        --popover: #2d3a2e;
-        --popover-foreground: #f0ebe5;
-        --primary: #4caf50;
-        --primary-foreground: #0a1f0c;
-        --secondary: #3e4a3d;
-        --secondary-foreground: #d7e0d6;
-        --muted: #2d3a2e;
-        --muted-foreground: #d7cfc4;
-        --accent: #388e3c;
-        --accent-foreground: #f0ebe5;
-        --destructive: #c62828;
-        --destructive-foreground: #f0ebe5;
-        --border: #3e4a3d;
-        --input: #3e4a3d;
-        --ring: #4caf50;
-        --sidebar: #1c2a1f;
-        --sidebar-foreground: #f0ebe5;
-        --sidebar-primary: #4caf50;
-        --sidebar-primary-foreground: #0a1f0c;
+        --background: #0f172a;
+        --foreground: #f1f5f9;
+        --card: #1e293b;
+        --card-foreground: #f1f5f9;
+        --popover: #1e293b;
+        --popover-foreground: #f1f5f9;
+        --primary: #38bdf8;
+        --primary-foreground: #0c4a6e;
+        --secondary: #334155;
+        --secondary-foreground: #cbd5e1;
+        --muted: #1e293b;
+        --muted-foreground: #94a3b8;
+        --accent: #1e3a5f;
+        --accent-foreground: #e0f2fe;
+        --destructive: #dc2626;
+        --destructive-foreground: #f1f5f9;
+        --border: #334155;
+        --input: #1e293b;
+        --ring: #38bdf8;
+        --sidebar: #1e293b;
+        --sidebar-foreground: #f1f5f9;
+        --sidebar-primary: #38bdf8;
+        --sidebar-primary-foreground: #0c4a6e;
+        --sidebar-border: #334155;
+        --success: #22c55e;
+        --warning: #fbbf24;
       }
-      
+
       body {
         background-color: var(--background);
         color: var(--foreground);
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      * {
+        border-color: var(--border);
       }
     </style>
     <script>
@@ -80,9 +92,8 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Montserrat', 'sans-serif'],
-              serif: ['Merriweather', 'serif'],
-              mono: ['Source Code Pro', 'monospace'],
+              sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+              display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
             },
             colors: {
               background: 'var(--background)',
@@ -108,6 +119,9 @@
               'sidebar-foreground': 'var(--sidebar-foreground)',
               'sidebar-primary': 'var(--sidebar-primary)',
               'sidebar-primary-foreground': 'var(--sidebar-primary-foreground)',
+              'sidebar-border': 'var(--sidebar-border)',
+              success: 'var(--success)',
+              warning: 'var(--warning)',
             },
             borderRadius: {
               lg: "var(--radius)",
@@ -115,9 +129,12 @@
               sm: "calc(var(--radius) - 4px)",
             },
             boxShadow: {
-                'sm': '0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10)',
-                'md': '0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10)',
-                'lg': '0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10)',
+                'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+                'DEFAULT': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+                'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+                'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
             }
           },
         },
