@@ -90,14 +90,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Sign out error:', error);
+    try {
+      setUser(null);
+      setProfile(null);
+      setSubscription(null);
+
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Sign out failed:', error);
       throw error;
     }
-    setUser(null);
-    setProfile(null);
-    setSubscription(null);
   };
 
   const refreshProfile = async () => {
