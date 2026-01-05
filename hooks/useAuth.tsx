@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profileError) {
         console.error('Profile error:', profileError);
-        throw profileError;
+        return;
       }
 
       setProfile(profileData);
@@ -60,24 +60,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await loadUserData(session.user.id);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await loadUserData(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error in initial session load:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
 
     const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await loadUserData(session.user.id);
-        } else {
-          setProfile(null);
-          setSubscription(null);
+        try {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            await loadUserData(session.user.id);
+          } else {
+            setProfile(null);
+            setSubscription(null);
+          }
+        } catch (error) {
+          console.error('Error in auth state change:', error);
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
