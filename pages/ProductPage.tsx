@@ -38,18 +38,12 @@ const ProductPage: React.FC = () => {
             const item = productPhotoShootHistory.find(i => i.id === id);
             if (item) {
                 setGeneratedImage(item.imageData);
-                setImageFile(null); // Clear uploader
+                setImageFile(null);
                 setPrompt('');
                 setIsSaved(true);
             } else {
                 navigate('/product');
             }
-        } else {
-            // Clear state for new creation
-            setGeneratedImage(null);
-            setImageFile(null);
-            setPrompt('On a white marble countertop with soft, natural morning light.');
-            setIsSaved(false);
         }
     }, [id, productPhotoShootHistory, navigate]);
 
@@ -125,9 +119,12 @@ const ProductPage: React.FC = () => {
     const handleExport = useCallback(() => {
         if (!generatedImage) return;
         const link = document.createElement('a');
-        link.download = `product-photoshoot-${Date.now()}.png`;
+        const extension = generatedImage.startsWith('data:image/png') ? 'png' : 'jpg';
+        link.download = `product-photoshoot-${Date.now()}.${extension}`;
         link.href = generatedImage;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
     }, [generatedImage]);
 
 
