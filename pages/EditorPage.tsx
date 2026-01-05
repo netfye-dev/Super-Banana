@@ -187,6 +187,10 @@ const EditorPage: React.FC = () => {
         setGeneratedThumbnail(dataUrl);
         setGenerationData({ prompt, assets: imageParts });
 
+        // Auto-save to history
+        await addThumbnail(dataUrl, prompt, imageParts);
+        setIsSaved(true);
+
         if (user?.id) {
           await logUsage(user.id, 'thumbnail', { prompt, preset: preset.name });
         }

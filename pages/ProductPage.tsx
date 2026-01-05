@@ -93,6 +93,11 @@ const ProductPage: React.FC = () => {
             if (result) {
                 const dataUrl = `data:${mimeType};base64,${result}`;
                 setGeneratedImage(dataUrl);
+
+                // Auto-save to history
+                const assetData = { base64Data: base64, mimeType };
+                await addProductPhotoShoot(dataUrl, prompt, assetData);
+                setIsSaved(true);
             }
         } catch (error) {
             console.error(error);

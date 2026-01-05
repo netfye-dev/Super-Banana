@@ -124,6 +124,10 @@ const ReimaginerPage: React.FC = () => {
                 const dataUrl = `data:${mimeType};base64,${result}`;
                 setGeneratedImage(dataUrl);
 
+                // Auto-save to history
+                await addReimaginerItem(dataUrl, prompt, imagePart);
+                setIsSaved(true);
+
                 if (user?.id) {
                     await logUsage(user.id, 'reimagine', { prompt, hasBaseImage: !!imagePart });
                 }
