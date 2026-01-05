@@ -7,7 +7,7 @@ import Input from '../components/ui/Input';
 import Spinner from '../components/ui/Spinner';
 
 const AdminPage: React.FC = () => {
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'users' | 'api_keys' | 'subscriptions'>('users');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
@@ -19,8 +19,10 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     if (profile?.is_admin) {
       loadData();
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [profile, activeTab]);
+  }, [profile, activeTab, authLoading]);
 
   const loadData = async () => {
     setLoading(true);
@@ -91,6 +93,14 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  if (authLoading || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
   if (!profile?.is_admin) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -98,6 +108,9 @@ const AdminPage: React.FC = () => {
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h2>
             <p className="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-4">
+              Current user: {profile?.email || 'Not logged in'}
+            </p>
           </div>
         </Card>
       </div>

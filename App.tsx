@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ThemeProvider } from './hooks/useTheme';
 import { HistoryProvider } from './hooks/useHistory';
@@ -74,9 +74,9 @@ const App: React.FC = () => {
       <AuthProvider>
         <HistoryProvider>
           <SettingsProvider>
-            <HashRouter>
+            <BrowserRouter>
               <AppContent />
-            </HashRouter>
+            </BrowserRouter>
           </SettingsProvider>
         </HistoryProvider>
       </AuthProvider>
