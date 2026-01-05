@@ -13,16 +13,25 @@ const getActiveApiKey = async (): Promise<string | null> => {
   if (cachedApiKey) return cachedApiKey;
 
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('api_keys')
       .select('api_key')
       .eq('provider', 'google_gemini')
       .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching API key from database:', error);
+    }
 
     if (data?.api_key) {
       cachedApiKey = data.api_key;
+      console.log('✅ API key loaded from database');
       return data.api_key;
+    } else {
+      console.warn('⚠️ No active API key found in database');
     }
   } catch (error) {
     console.error('Error fetching API key:', error);
