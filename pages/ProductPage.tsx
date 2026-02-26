@@ -34,10 +34,21 @@ const ProductPage: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
+        return () => {
+            if (imageFile) {
+                URL.revokeObjectURL(imageFile.preview);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
         if (id) {
             const item = productPhotoShootHistory.find(i => i.id === id);
             if (item) {
                 setGeneratedImage(item.imageData);
+                if (imageFile) {
+                    URL.revokeObjectURL(imageFile.preview);
+                }
                 setImageFile(null);
                 setPrompt('');
                 setIsSaved(true);
@@ -50,6 +61,20 @@ const ProductPage: React.FC = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`File "${file.name}" is too large. Maximum file size is 10MB.`);
+                return;
+            }
+            if (!file.type.startsWith('image/')) {
+                alert(`File "${file.name}" is not an image.`);
+                return;
+            }
+
+            if (imageFile) {
+                URL.revokeObjectURL(imageFile.preview);
+            }
             setImageFile({ file, preview: URL.createObjectURL(file) });
             setGeneratedImage(null);
         }
@@ -77,26 +102,21 @@ const ProductPage: React.FC = () => {
         setGeneratedImage(null);
         setIsSaved(false);
         try {
-            console.log('📤 Converting uploaded image to base64...');
+            ('📤 Converting uploaded image to base64...');
             const base64 = await geminiService.fileToBase64(imageFile.file);
             const mimeType = imageFile.file.type;
-            console.log(`✅ Image converted (${mimeType}, ${Math.round(base64.length / 1024)}KB)`);
+            (`✅ Image converted (${mimeType}, ${Math.round(base64.length / 1024)}KB)`);
 
             setGenerationAsset({ base64Data: base64, mimeType });
 
-            console.log('🚀 Starting product photoshoot generation...');
+            ('🚀 Starting product photoshoot generation...');
             const result = await geminiService.generateProductPhotoShoot(base64, mimeType, prompt, productPhotoShootExamples, user.id);
 
             if (result) {
-                console.log(`✅ Generated image received (${Math.round(result.length / 1024)}KB base64)`);
+                (`✅ Generated image received (${Math.round(result.length / 1024)}KB base64)`);
                 const dataUrl = `data:image/jpeg;base64,${result}`;
                 setGeneratedImage(dataUrl);
-
-                console.log('💾 Auto-saving to history...');
-                const assetData = { base64Data: base64, mimeType };
-                await addProductPhotoShoot(dataUrl, prompt, assetData);
-                console.log('✅ Saved to history successfully');
-                setIsSaved(true);
+                setIsSaved(false);
             } else {
                 console.warn('⚠️ No result returned from generation');
                 alert('Image generation returned no result. Please try again.');
@@ -109,10 +129,18 @@ const ProductPage: React.FC = () => {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (generatedImage && generationAsset && prompt && !isSaved) {
-            addProductPhotoShoot(generatedImage, prompt, generationAsset);
-            setIsSaved(true);
+            try {
+                setIsLoading(true);
+                await addProductPhotoShoot(generatedImage, prompt, generationAsset);
+                setIsSaved(true);
+            } catch (error) {
+                console.error(error);
+                alert('Failed to save product photo. Please try again.');
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
     

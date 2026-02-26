@@ -4,8 +4,6 @@ import { ImagePart } from '../types';
 import { supabase } from '../lib/supabase';
 import { checkUsageLimit, logUsage } from './usageService';
 
-console.log('✅ GeminiService loaded - Version 2.0 (Canvas-based mock)');
-
 let cachedApiKey: string | null = null;
 let ai: GoogleGenAI | null = null;
 

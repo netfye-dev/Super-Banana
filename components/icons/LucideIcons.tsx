@@ -93,3 +93,15 @@ export const KeyIcon: React.FC<{ className?: string }> = ({ className }) => (
 export const ImageIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg {...iconProps} className={className}><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
 );
+
+export const XIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg {...iconProps} className={className}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+);
+
+export const AlertTriangleIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg {...iconProps} className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+);
+
+export const InfoIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg {...iconProps} className={className}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+);

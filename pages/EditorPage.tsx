@@ -47,10 +47,22 @@ const EditorPage: React.FC = () => {
   const [generatedScene, setGeneratedScene] = useState<string | null>(null);
 
   useEffect(() => {
+    return () => {
+      assets.forEach(asset => {
+        URL.revokeObjectURL(asset.preview);
+      });
+      if (generatedScene) {
+        URL.revokeObjectURL(generatedScene);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (id) {
       const item = thumbnailHistory.find(i => i.id === id);
       if (item) {
         setGeneratedThumbnail(item.imageData);
+        assets.forEach(asset => URL.revokeObjectURL(asset.preview));
         setAssets([]);
         setPrompt('');
         setIsSaved(true);
@@ -59,6 +71,7 @@ const EditorPage: React.FC = () => {
       }
     } else {
       setGeneratedThumbnail(null);
+      assets.forEach(asset => URL.revokeObjectURL(asset.preview));
       setAssets([]);
       setPrompt('');
       setIsSaved(false);
@@ -68,6 +81,19 @@ const EditorPage: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
     const files = Array.from(event.target.files);
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`File "${file.name}" is too large. Maximum file size is 10MB.`);
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert(`File "${file.name}" is not an image.`);
+        return;
+      }
+    }
+
     const newAssets: Asset[] = files.map(file => ({
       id: `${file.name}-${Date.now()}`,
       file,
@@ -183,10 +209,7 @@ const EditorPage: React.FC = () => {
         const dataUrl = `data:${mimeType};base64,${result}`;
         setGeneratedThumbnail(dataUrl);
         setGenerationData({ prompt, assets: imageParts });
-
-        // Auto-save to history
-        await addThumbnail(dataUrl, prompt, imageParts);
-        setIsSaved(true);
+        setIsSaved(false);
       }
 
     } catch (error) {
@@ -197,10 +220,18 @@ const EditorPage: React.FC = () => {
     }
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (generatedThumbnail && generationData && !isSaved) {
-      addThumbnail(generatedThumbnail, generationData.prompt, generationData.assets);
-      setIsSaved(true);
+      try {
+        setIsLoading(true);
+        await addThumbnail(generatedThumbnail, generationData.prompt, generationData.assets);
+        setIsSaved(true);
+      } catch (error) {
+        console.error(error);
+        alert('Failed to save thumbnail. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 

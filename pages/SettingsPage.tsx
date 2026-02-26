@@ -46,6 +46,12 @@ const SettingsPage: React.FC = () => {
     setLoading(true);
     setMessage(null);
 
+    if (!currentPassword) {
+      setMessage({ type: 'error', text: 'Current password is required' });
+      setLoading(false);
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setMessage({ type: 'error', text: 'New passwords do not match' });
       setLoading(false);
@@ -59,6 +65,17 @@ const SettingsPage: React.FC = () => {
     }
 
     try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        setMessage({ type: 'error', text: 'Current password is incorrect' });
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -192,6 +209,19 @@ const SettingsPage: React.FC = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                 Update your password to keep your account secure
               </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Current Password
+              </label>
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+                required
+              />
             </div>
 
             <div>

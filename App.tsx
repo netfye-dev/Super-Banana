@@ -5,6 +5,8 @@ import { ThemeProvider } from './hooks/useTheme';
 import { HistoryProvider } from './hooks/useHistory';
 import { SettingsProvider } from './hooks/useSettings';
 import { AuthProvider } from './hooks/useAuth';
+import { NotificationProvider } from './hooks/useNotification';
+import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Header from './components/layout/Header';
 import SettingsModal from './components/layout/SettingsModal';
@@ -70,17 +72,21 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <HistoryProvider>
-          <SettingsProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </SettingsProvider>
-        </HistoryProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <NotificationProvider>
+          <AuthProvider>
+            <HistoryProvider>
+              <SettingsProvider>
+                <BrowserRouter>
+                  <AppContent />
+                </BrowserRouter>
+              </SettingsProvider>
+            </HistoryProvider>
+          </AuthProvider>
+        </NotificationProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

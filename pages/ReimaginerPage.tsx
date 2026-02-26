@@ -42,12 +42,23 @@ const ReimaginerPage: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
+        return () => {
+            if (imageFile) {
+                URL.revokeObjectURL(imageFile.preview);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
         if (id) {
             const item = reimaginerHistory.find(i => i.id === id);
             if (item) {
                 setGeneratedImage(item.imageData);
                 setPrompt(item.prompt || '');
                 setIsSaved(true);
+                if (imageFile) {
+                    URL.revokeObjectURL(imageFile.preview);
+                }
                 setImageFile(null);
                 setShowImageUpload(item.assets && item.assets.length > 0);
             } else {
@@ -56,6 +67,9 @@ const ReimaginerPage: React.FC = () => {
         } else {
             setGeneratedImage(null);
             setPrompt('');
+            if (imageFile) {
+                URL.revokeObjectURL(imageFile.preview);
+            }
             setImageFile(null);
             setShowImageUpload(false);
             setIsSaved(false);
@@ -65,9 +79,24 @@ const ReimaginerPage: React.FC = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`File "${file.name}" is too large. Maximum file size is 10MB.`);
+                event.target.value = "";
+                return;
+            }
+            if (!file.type.startsWith('image/')) {
+                alert(`File "${file.name}" is not an image.`);
+                event.target.value = "";
+                return;
+            }
+
+            if (imageFile) {
+                URL.revokeObjectURL(imageFile.preview);
+            }
             setImageFile({ file, preview: URL.createObjectURL(file) });
             setGeneratedImage(null);
-            // Reset file input to allow re-uploading the same file
             if (event.target) {
               event.target.value = "";
             }
@@ -136,10 +165,18 @@ const ReimaginerPage: React.FC = () => {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (generatedImage && !isSaved) {
-            addReimaginerItem(generatedImage, prompt, generationAsset || undefined);
-            setIsSaved(true);
+            try {
+                setIsLoading(true);
+                await addReimaginerItem(generatedImage, prompt, generationAsset || undefined);
+                setIsSaved(true);
+            } catch (error) {
+                console.error(error);
+                alert('Failed to save reimagined image. Please try again.');
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 

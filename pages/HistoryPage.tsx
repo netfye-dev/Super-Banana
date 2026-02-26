@@ -31,11 +31,14 @@ const HistoryPage: React.FC = () => {
   }, [user, filter]);
 
   const loadImages = async () => {
+    if (!user) return;
+
     setLoading(true);
     try {
       let query = supabase
         .from('generated_images')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (filter !== 'all') {
