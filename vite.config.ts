@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, '.'),
         }
       },
+      envPrefix: 'VITE_',
       envDir: process.cwd()
     };
 });
